@@ -13,11 +13,6 @@ HTTP server for second app
 make
 ```
 
-## Running
-```
-dzdo docker run --network host sterling/gorestapi:latest /go/bin/gorestapi
-```
-
 ## Usage
 ```
 curl localhost:8080/version 
