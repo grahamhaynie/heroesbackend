@@ -15,7 +15,6 @@ make
 
 ## Usage
 ```
-curl localhost:8080/version 
 curl localhost:8080/api/heroes
 curl localhost:8080/api/heroes/12
 curl -XPOST localhost:8080/api/heroes -H "Content-Type: application/json" --data '{"Id":69,"Name":"bob","Power":"none","AlterEgo":"nobody"}'

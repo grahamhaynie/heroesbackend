@@ -25,8 +25,7 @@ const (
 )
 
 var (
-	Version        = "development"
-	heroes  []Hero = []Hero{
+	heroes []Hero = []Hero{
 		{Id: 12, Name: "Dr. Nice", Power: "bein nice", AlterEgo: "nobody", PhotoURL: "http://localhost:8080/photo/minion.jpeg"},
 		{Id: 13, Name: "Bombasto", Power: "throwing stuf"},
 		{Id: 14, Name: "Celeritas", Power: "celebrity", AlterEgo: "tom cruise"},
@@ -225,20 +224,11 @@ func handlePhoto(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func version(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	fmt.Fprintln(w, Version)
-}
-
 func main() {
 	sortHeroes()
 	r := mux.NewRouter()
 	r.HandleFunc(basepath, handleBase).Methods(http.MethodGet, http.MethodPut, http.MethodPost, http.MethodOptions)
 	r.HandleFunc(basepath+"/", handleBase).Methods(http.MethodGet, http.MethodOptions)
-	r.HandleFunc("/version", version).Methods(http.MethodGet)
 	r.HandleFunc(basepath+"/{id}", handleId).Methods(http.MethodGet, http.MethodDelete, http.MethodOptions)
 	r.HandleFunc("/photo/"+"{fname}", handlePhoto).Methods(http.MethodGet, http.MethodOptions)
 	r.Use(mux.CORSMethodMiddleware(r))
