@@ -7,12 +7,6 @@ HTTP server for second app
 - correct return codes
 - kube
 
-
-## Building
-```
-make
-```
-
 ## Usage
 ```
 curl localhost:8080/api/heroes
