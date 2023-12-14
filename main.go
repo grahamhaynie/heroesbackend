@@ -27,7 +27,7 @@ const (
 
 var (
 	heroes []Hero = []Hero{
-		{Id: 12, Name: "Dr. Nice", Power: "bein nice", AlterEgo: "nobody", PhotoURL: "http://localhost:8080/photo/minion.jpeg"},
+		{Id: 12, Name: "Dr. Nice", Power: "bein nice", AlterEgo: "nobody", PhotoURL: "http://localhost:8080/photo/minion.jpg"},
 		{Id: 13, Name: "Bombasto", Power: "throwing stuf"},
 		{Id: 14, Name: "Celeritas", Power: "celebrity", AlterEgo: "tom cruise"},
 		{Id: 15, Name: "Magneta", Power: "not sure tbh"},
@@ -249,9 +249,6 @@ func handlePhoto(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodPut, http.MethodPost:
-		fmt.Println("got a file put " + n)
-		fmt.Printf("%d\n", id)
-
 		// save file
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -267,7 +264,17 @@ func handlePhoto(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// TODO - update hero with new file location
+		// update hero with new file location
+		h := getHero(id)
+		if h != nil {
+			// TODO - fix this
+			h.PhotoURL = "http://localhost:8080/photo/" + n
+			if !updateHero(*h) {
+				fmt.Printf("could not update photo for hero %d\n", id)
+			}
+		}
+
+		fmt.Println(heroes)
 
 	case http.MethodOptions:
 		return

@@ -2,10 +2,12 @@
 HTTP server for second app
 
 ## TODO 
+- fix pathing for photos
 - add database
 - openapi
 - correct return codes
 - kube
+- fix windows debug popup
 
 ## Usage
 ```
