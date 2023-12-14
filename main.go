@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"sort"
@@ -198,7 +199,7 @@ func handleId(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handlePhoto(w http.ResponseWriter, r *http.Request) {
+func getPhoto(w http.ResponseWriter, r *http.Request) {
 	setHeaders(&w)
 	vars := mux.Vars(r)
 	n, ok := vars["fname"]
@@ -217,10 +218,57 @@ func handlePhoto(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", "application/octet-stream")
 		w.Write(fileBytes)
-	case http.MethodPut:
-		fmt.Println("got a file put")
-	case http.MethodPost:
-		fmt.Println("got a file post")
+	case http.MethodOptions:
+		return
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func handlePhoto(w http.ResponseWriter, r *http.Request) {
+	setHeaders(&w)
+	vars := mux.Vars(r)
+	n, ok := vars["fname"]
+	if !ok {
+		fmt.Println("filename is missing in parameters")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	i, ok := vars["id"]
+	if !ok {
+		fmt.Println("id is missing in parameters")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	id, err := strconv.Atoi(i)
+	if err != nil {
+		fmt.Println("could not convert id to int")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	switch r.Method {
+	case http.MethodPut, http.MethodPost:
+		fmt.Println("got a file put " + n)
+		fmt.Printf("%d\n", id)
+
+		// save file
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			fmt.Println("could not read body as file")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		defer r.Body.Close()
+		err = os.WriteFile("resources/"+n, body, 0644)
+		if err != nil {
+			fmt.Println("could not write body to file")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		// TODO - update hero with new file location
+
 	case http.MethodOptions:
 		return
 	default:
@@ -234,7 +282,8 @@ func main() {
 	r.HandleFunc(basepath, handleBase).Methods(http.MethodGet, http.MethodPut, http.MethodPost, http.MethodOptions)
 	r.HandleFunc(basepath+"/", handleBase).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc(basepath+"/{id}", handleId).Methods(http.MethodGet, http.MethodDelete, http.MethodOptions)
-	r.HandleFunc("/photo/"+"{fname}", handlePhoto).Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/photo/"+"{fname}", getPhoto).Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc(basepath+"/photo/{id}/"+"{fname}", handlePhoto).Methods(http.MethodPut, http.MethodPost, http.MethodOptions)
 	r.Use(mux.CORSMethodMiddleware(r))
 
 	http.ListenAndServe(":8080", r)
