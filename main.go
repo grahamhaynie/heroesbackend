@@ -217,6 +217,10 @@ func handlePhoto(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", "application/octet-stream")
 		w.Write(fileBytes)
+	case http.MethodPut:
+		fmt.Println("got a file put")
+	case http.MethodPost:
+		fmt.Println("got a file post")
 	case http.MethodOptions:
 		return
 	default:
