@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/gorilla/mux"
 )
@@ -37,6 +38,7 @@ var (
 		{Id: 19, Name: "Magma", Power: "making rocks"},
 		{Id: 20, Name: "Tornado", Power: "spinning in an office chair", AlterEgo: "nick"},
 	}
+	rwMutex sync.RWMutex
 )
 
 func getHero(id int) *Hero {
@@ -106,13 +108,15 @@ func sortHeroes() {
 func setHeaders(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Content-Type", "application/json; charset=UTF-8")
-	(*w).Header().Set("Access-Control-Allow-Headers", "content-type")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type")
 }
 
 func handleBase(w http.ResponseWriter, r *http.Request) {
 	setHeaders(&w)
 	switch r.Method {
 	case http.MethodGet:
+		rwMutex.RLock()
+		defer rwMutex.RUnlock()
 		name := r.URL.Query().Get("name")
 		qheroes := heroes
 		if len(name) > 0 {
@@ -127,6 +131,8 @@ func handleBase(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Fprintf(w, "%s", h)
 	case http.MethodPost:
+		rwMutex.Lock()
+		defer rwMutex.Unlock()
 		hero := Hero{}
 		err := json.NewDecoder(r.Body).Decode(&hero)
 		if err != nil {
@@ -136,6 +142,8 @@ func handleBase(w http.ResponseWriter, r *http.Request) {
 		}
 		addHero(hero)
 	case http.MethodPut:
+		rwMutex.Lock()
+		defer rwMutex.Unlock()
 		hero := Hero{}
 		err := json.NewDecoder(r.Body).Decode(&hero)
 		if err != nil {
@@ -173,6 +181,8 @@ func handleId(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
+		rwMutex.RLock()
+		defer rwMutex.RUnlock()
 		h := getHero(id)
 		if h == nil {
 			fmt.Println("hero with id " + i + " not found")
@@ -187,6 +197,8 @@ func handleId(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Fprintf(w, "%s", hs)
 	case http.MethodDelete:
+		rwMutex.Lock()
+		defer rwMutex.Unlock()
 		if !deleteHero(id) {
 			fmt.Println("hero with id " + i + " could not be deleted as it does not exist")
 			w.WriteHeader(http.StatusBadRequest)
@@ -234,21 +246,11 @@ func handlePhoto(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	i, ok := vars["id"]
-	if !ok {
-		fmt.Println("id is missing in parameters")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	id, err := strconv.Atoi(i)
-	if err != nil {
-		fmt.Println("could not convert id to int")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
 
 	switch r.Method {
 	case http.MethodPut, http.MethodPost:
+		rwMutex.Lock()
+		defer rwMutex.Unlock()
 		// save file
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -265,16 +267,15 @@ func handlePhoto(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// update hero with new file location
-		h := getHero(id)
-		if h != nil {
-			// TODO - fix this
-			h.PhotoURL = "http://localhost:8080/photo/" + n
-			if !updateHero(*h) {
-				fmt.Printf("could not update photo for hero %d\n", id)
-			}
+		response := map[string]string{"url": "http://localhost:8080/photo/" + n}
+		w.Header().Set("Content-Type", "application/json")
+		m, err := json.Marshal(response)
+		if err != nil {
+			fmt.Printf("error marashalling json: %v\n", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
-
-		fmt.Println(heroes)
+		fmt.Fprintf(w, "%s", m)
 
 	case http.MethodOptions:
 		return

@@ -2,7 +2,7 @@
 HTTP server for second app
 
 ## TODO 
-- fix pathing for photos
+- fix photo uploading logic. kinda goofy.
 - add database
 - openapi
 - correct return codes
