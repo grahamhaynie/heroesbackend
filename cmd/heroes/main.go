@@ -9,17 +9,20 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/gorilla/mux"
 )
 
 var (
-	db database.Herodb
+	db          database.Herodb
+	resourceDir string
 )
 
 const (
-	basepath = "/api/heroes"
+	basepath    = "/api/heroes"
+	resourceEnv = "RESOURCE_DIR"
 )
 
 func setHeaders(w *http.ResponseWriter) {
@@ -154,7 +157,7 @@ func getPhoto(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		fileBytes, err := os.ReadFile("resources/" + n)
+		fileBytes, err := os.ReadFile(resourceDir + "/" + n)
 		if err != nil {
 			fmt.Println("file could not be found")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -189,7 +192,7 @@ func handlePhoto(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer r.Body.Close()
-		err = os.WriteFile("resources/"+n, body, 0644)
+		err = os.WriteFile(resourceDir+"/"+n, body, 0644)
 		if err != nil {
 			fmt.Println("could not write body to file")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -215,11 +218,25 @@ func handlePhoto(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	var err error
+	e := os.Getenv(resourceEnv)
+	if _, err = os.Stat(e); os.IsNotExist(err) {
+		fmt.Println(resourceEnv + " env variable does not point to a real directory, please set")
+		os.Exit(1)
+	}
+	resourceDir, err = filepath.Abs(e)
+	if err != nil {
+		fmt.Printf("Unable to resolve absolute path  %v\n", e)
+		os.Exit(1)
+	}
+	fmt.Println("Running with " + resourceEnv + " set to " + resourceDir)
+
 	db = &memorydb.Memorydb{}
 	if err := db.Connect(nil); err != nil {
 		fmt.Println("Error connecting to db: " + err.Error())
 		os.Exit(1)
 	}
+
 	defer func() {
 		if err := db.Disconnect(); err != nil {
 			fmt.Println("Error disconnecting from db: " + err.Error())

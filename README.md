@@ -2,8 +2,8 @@
 HTTP server for second app
 
 ## TODO 
-- fix resources relative path env
-- fix photo uploading logic. kinda goofy.
+- fix pipeline
+- fix photo uploading logic. kinda goofy. also fix case of duplicate filename
 - add database
 - openapi
 - correct return codes
