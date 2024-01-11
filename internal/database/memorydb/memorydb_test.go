@@ -7,5 +7,9 @@ import (
 )
 
 func TestMemoryDbImplementsHerodb(t *testing.T) {
-	var _ database.Herodb = &memorydb.Memorydb{}
+	var m interface{} = &memorydb.Memorydb{}
+	if _, ok := m.(database.Herodb); !ok {
+		t.Fatalf("memorydb does not implement herodb interface")
+	}
+	//var _ database.Herodb = &memorydb.Memorydb{}
 }

@@ -2,15 +2,24 @@
 HTTP server for second app
 
 ## TODO 
-- fix pipeline
-- fix photo uploading logic. kinda goofy. also fix case of duplicate filename
-- add database
+- fix mongo, unit tests for database
+- add env variables database
+- add contexts https://go.dev/blog/context
+- fix photo uploading logic. kinda goofy. also fix case of duplicate filename. use channels.
+- finish todos
 - openapi
-- correct return codes
+- check return codes
 - kube
 - fix windows debug popup
 
+## Mongodb
+Before running, start a mongodb docker container (on windows, start docker desktop first...)
+```
+
+```
+
 ## Usage
+Start mongo docker container
 ```
 curl localhost:8080/api/heroes
 curl localhost:8080/api/heroes/12

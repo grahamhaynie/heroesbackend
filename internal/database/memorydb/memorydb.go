@@ -16,18 +16,7 @@ type Memorydb struct {
 }
 
 func (m *Memorydb) Connect(p database.Params) error {
-	m.heroes = []hero.Hero{
-		{Id: 12, Name: "Dr. Nice", Power: "bein nice", AlterEgo: "nobody", PhotoURL: "http://localhost:8080/photo/minion.jpg"},
-		{Id: 13, Name: "Bombasto", Power: "throwing stuf"},
-		{Id: 14, Name: "Celeritas", Power: "celebrity", AlterEgo: "tom cruise"},
-		{Id: 15, Name: "Magneta", Power: "not sure tbh"},
-		{Id: 16, Name: "RubberMan", Power: "elastic arms", AlterEgo: "steve"},
-		{Id: 17, Name: "Dynama", Power: "dynamite"},
-		{Id: 18, Name: "Dr. IQ", Power: "talking", AlterEgo: "michael"},
-		{Id: 19, Name: "Magma", Power: "making rocks"},
-		{Id: 20, Name: "Tornado", Power: "spinning in an office chair", AlterEgo: "nick"},
-	}
-
+	m.heroes = database.TestHeroes
 	m.SortHeroes()
 	return nil
 }

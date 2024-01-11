@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gorestapi/internal/database"
-	"gorestapi/internal/database/memorydb"
+	"gorestapi/internal/database/mongodb"
 	"gorestapi/internal/hero"
 	"io"
 	"net/http"
@@ -231,8 +231,11 @@ func main() {
 	}
 	fmt.Println("Running with " + resourceEnv + " set to " + resourceDir)
 
-	db = &memorydb.Memorydb{}
-	if err := db.Connect(nil); err != nil {
+	// TODO - configure this in flags
+	//db = &memorydb.Memorydb{}
+	db = &mongodb.Mongodb{}
+	var params database.Params = mongodb.MongodbParmas{URI: "mongodb://localhost:27017"}
+	if err := db.Connect(params); err != nil {
 		fmt.Println("Error connecting to db: " + err.Error())
 		os.Exit(1)
 	}
