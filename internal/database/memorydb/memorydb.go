@@ -16,6 +16,8 @@ type Memorydb struct {
 }
 
 func (m *Memorydb) Connect(p database.Params) error {
+	m.rwMutex.Lock()
+	defer m.rwMutex.Unlock()
 	m.heroes = database.TestHeroes
 	m.SortHeroes()
 	return nil
@@ -26,15 +28,21 @@ func (m *Memorydb) Disconnect() error {
 }
 
 func (m *Memorydb) GetById(id int) (*hero.Hero, error) {
+	m.rwMutex.Lock()
+	defer m.rwMutex.Unlock()
+
 	for _, he := range m.heroes {
 		if he.Id == id {
 			return &he, nil
 		}
 	}
-	return nil, nil
+	return nil, errors.New("hero with id not found")
 }
 
 func (m *Memorydb) GetByName(name string) ([]hero.Hero, error) {
+	m.rwMutex.Lock()
+	defer m.rwMutex.Unlock()
+
 	hs := make([]hero.Hero, 0)
 	for _, he := range m.heroes {
 		if strings.Contains(strings.ToLower(he.Name), strings.ToLower(name)) {
@@ -45,10 +53,14 @@ func (m *Memorydb) GetByName(name string) ([]hero.Hero, error) {
 }
 
 func (m *Memorydb) GetAll() ([]hero.Hero, error) {
+	m.rwMutex.Lock()
+	defer m.rwMutex.Unlock()
 	return m.heroes, nil
 }
 
 func (m *Memorydb) UpdateHero(h hero.Hero) error {
+	m.rwMutex.Lock()
+	defer m.rwMutex.Unlock()
 	for i, he := range m.heroes {
 		if he.Id == h.Id {
 			m.heroes[i] = h
@@ -59,6 +71,8 @@ func (m *Memorydb) UpdateHero(h hero.Hero) error {
 }
 
 func (m *Memorydb) DeleteHero(id int) error {
+	m.rwMutex.Lock()
+	defer m.rwMutex.Unlock()
 	del := -1
 	for i, he := range m.heroes {
 		if he.Id == id {
@@ -75,11 +89,12 @@ func (m *Memorydb) DeleteHero(id int) error {
 }
 
 func (m *Memorydb) AddHero(h hero.Hero) error {
-	// make sure id is not duplicate
-	// works because heroes is sorted
+	m.rwMutex.Lock()
+	defer m.rwMutex.Unlock()
+
 	for _, he := range m.heroes {
 		if he.Id == h.Id {
-			h.Id++
+			return errors.New("hero with id already exists")
 		}
 	}
 	m.heroes = append(m.heroes, h)

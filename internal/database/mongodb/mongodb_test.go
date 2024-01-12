@@ -12,3 +12,5 @@ func TestMongoDbImplementsHerodb(t *testing.T) {
 		t.Fatalf("mongodb does not implement herodb interface")
 	}
 }
+
+// TODO mock mongodb

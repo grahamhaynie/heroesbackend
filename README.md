@@ -2,7 +2,8 @@
 HTTP server for second app
 
 ## TODO 
-- fix mongo, unit tests for database
+- unit tests for database
+- comment code
 - add env variables database
 - add contexts https://go.dev/blog/context
 - fix photo uploading logic. kinda goofy. also fix case of duplicate filename. use channels.

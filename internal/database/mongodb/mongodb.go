@@ -54,12 +54,12 @@ func (m *Mongodb) Disconnect() error {
 }
 
 func (m Mongodb) GetById(id int) (*hero.Hero, error) {
-	var h *hero.Hero
-	err := m.coll.FindOne(context.TODO(), bson.D{{Key: "id", Value: id}}).Decode(h)
+	var h hero.Hero
+	err := m.coll.FindOne(context.TODO(), bson.D{{Key: "id", Value: id}}).Decode(&h)
 	if err != nil {
 		return nil, err
 	}
-	return h, nil
+	return &h, nil
 }
 
 func (m Mongodb) GetAll() ([]hero.Hero, error) {
@@ -90,7 +90,9 @@ func (m Mongodb) GetAll() ([]hero.Hero, error) {
 func (m Mongodb) GetByName(name string) ([]hero.Hero, error) {
 	var heroes []hero.Hero
 
-	filter := bson.D{{Key: "name", Value: name}}
+	regexPattern := "^" + name
+	// i option denotes case-insensitive
+	filter := bson.D{{Key: "name", Value: bson.D{{Key: "$regex", Value: regexPattern}, {Key: "$options", Value: "i"}}}}
 	cursor, err := m.coll.Find(context.TODO(), filter)
 	if err != nil {
 		return nil, err
@@ -136,7 +138,7 @@ func (m Mongodb) populate() error {
 	opts := options.Update().SetUpsert(true)
 	for _, h := range database.TestHeroes {
 		filter := bson.D{{Key: "id", Value: h.Id}}
-		update := bson.D{{"$setOnInsert", h}}
+		update := bson.D{{Key: "$setOnInsert", Value: h}}
 		_, err := m.coll.UpdateOne(context.TODO(), filter, update, opts)
 		if err != nil {
 			return err
