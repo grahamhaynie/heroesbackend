@@ -2,9 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"gorestapi/internal/database"
+	"gorestapi/internal/database/memorydb"
 	"gorestapi/internal/database/mongodb"
+	setFlag "gorestapi/internal/flag"
 	"gorestapi/internal/hero"
 	"io"
 	"net/http"
@@ -18,6 +21,8 @@ import (
 var (
 	db          database.Herodb
 	resourceDir string
+	uri         setFlag.FlagVar
+	params      database.Params
 )
 
 const (
@@ -217,7 +222,18 @@ func handlePhoto(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// initialize flag
+func init() {
+	flag.Var(&uri, "u", "URI of mongodb. If not specified, will use in memory database.")
+}
+
 func main() {
+	flag.Parse()
+	fmt.Println("Running with flags: ")
+	flag.VisitAll(func(f *flag.Flag) {
+		fmt.Printf("%s: %v\n", f.Name, f.Value)
+	})
+
 	var err error
 	e := os.Getenv(resourceEnv)
 	if _, err = os.Stat(e); os.IsNotExist(err) {
@@ -231,10 +247,15 @@ func main() {
 	}
 	fmt.Println("Running with " + resourceEnv + " set to " + resourceDir)
 
-	// TODO - configure this in flags
-	//db = &memorydb.Memorydb{}
-	db = &mongodb.Mongodb{}
-	var params database.Params = mongodb.MongodbParmas{URI: "mongodb://localhost:27017"}
+	if uri.IsSet {
+		fmt.Println("Using mongodb")
+		db = &mongodb.Mongodb{}
+		// mongodb://localhost:27017
+		params = mongodb.MongodbParmas{URI: uri.Value}
+	} else {
+		fmt.Println("Using memorydb")
+		db = &memorydb.Memorydb{}
+	}
 	if err := db.Connect(params); err != nil {
 		fmt.Println("Error connecting to db: " + err.Error())
 		os.Exit(1)

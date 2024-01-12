@@ -11,6 +11,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/heroes/main.go",
             "env" : {"RESOURCE_DIR": "${workspaceFolder}/resources"},
+            "args": ["-u", "mongodb://localhost:27017"]
         }
     ]
 }

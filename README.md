@@ -2,12 +2,12 @@
 HTTP server for second app
 
 ## TODO 
-- unit tests for database
-- comment code
-- add env variables database
+- unit tests for mongo
+- comment code, add documentation 
 - add contexts https://go.dev/blog/context
 - fix photo uploading logic. kinda goofy. also fix case of duplicate filename. use channels.
 - finish todos
+- cleanup git 
 - openapi
 - check return codes
 - kube

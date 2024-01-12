@@ -14,3 +14,4 @@ func TestMongoDbImplementsHerodb(t *testing.T) {
 }
 
 // TODO mock mongodb
+// more of an integration test but mock or connect to real one and run unit tests?
