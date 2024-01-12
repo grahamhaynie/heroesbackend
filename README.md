@@ -6,12 +6,12 @@ HTTP server for second app
 - comment code, add documentation 
 - add contexts https://go.dev/blog/context
 - fix photo uploading logic. kinda goofy. also fix case of duplicate filename. use channels.
+- maybe cleanup main into two files.
 - finish todos
 - cleanup git 
 - openapi
 - check return codes
 - kube
-- fix windows debug popup
 
 ## Mongodb
 Before running, start a mongodb docker container (on windows, start docker desktop first...)

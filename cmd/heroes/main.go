@@ -19,15 +19,15 @@ import (
 )
 
 var (
-	db          database.Herodb
-	resourceDir string
-	uri         setFlag.FlagVar
-	params      database.Params
+	db           database.Herodb
+	resourceFlag setFlag.FlagVar
+	resourceDir  string
+	uri          setFlag.FlagVar
+	params       database.Params
 )
 
 const (
-	basepath    = "/api/heroes"
-	resourceEnv = "RESOURCE_DIR"
+	basepath = "/api/heroes"
 )
 
 func setHeaders(w *http.ResponseWriter) {
@@ -225,6 +225,7 @@ func handlePhoto(w http.ResponseWriter, r *http.Request) {
 // initialize flag
 func init() {
 	flag.Var(&uri, "u", "URI of mongodb. If not specified, will use in memory database.")
+	flag.Var(&resourceFlag, "r", "Resource directory for pictures. Required")
 }
 
 func main() {
@@ -235,22 +236,19 @@ func main() {
 	})
 
 	var err error
-	e := os.Getenv(resourceEnv)
-	if _, err = os.Stat(e); os.IsNotExist(err) {
-		fmt.Println(resourceEnv + " env variable does not point to a real directory, please set")
+	if _, err = os.Stat(resourceFlag.Value); os.IsNotExist(err) {
+		fmt.Println(resourceFlag.Value + " resource directory does not point to a real directory")
 		os.Exit(1)
 	}
-	resourceDir, err = filepath.Abs(e)
+	resourceDir, err = filepath.Abs(resourceFlag.Value)
 	if err != nil {
-		fmt.Printf("Unable to resolve absolute path  %v\n", e)
+		fmt.Printf("Unable to resolve absoulate path of resource directory: %v\n", resourceFlag.Value)
 		os.Exit(1)
 	}
-	fmt.Println("Running with " + resourceEnv + " set to " + resourceDir)
 
 	if uri.IsSet {
 		fmt.Println("Using mongodb")
 		db = &mongodb.Mongodb{}
-		// mongodb://localhost:27017
 		params = mongodb.MongodbParmas{URI: uri.Value}
 	} else {
 		fmt.Println("Using memorydb")
@@ -260,6 +258,7 @@ func main() {
 		fmt.Println("Error connecting to db: " + err.Error())
 		os.Exit(1)
 	}
+	fmt.Println("Database connected")
 
 	defer func() {
 		if err := db.Disconnect(); err != nil {
