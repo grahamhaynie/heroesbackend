@@ -3,10 +3,9 @@ HTTP server for second app
 
 ## TODO 
 - unit tests for mongo
-- comment code, add documentation 
 - add contexts https://go.dev/blog/context
 - fix photo uploading logic. kinda goofy. also fix case of duplicate filename. use channels.
-- maybe cleanup main into two files.
+- maybe cleanup main into more files.
 - finish todos
 - cleanup git 
 - openapi
@@ -14,13 +13,26 @@ HTTP server for second app
 - kube
 
 ## Mongodb
-Before running, start a mongodb docker container (on windows, start docker desktop first...)
+Before running with mongodb as the database, start a mongodb docker container (on windows, start docker desktop first)
 ```
+docker run --name mongo -d -p 27017:27017 mongo
+```
+To run app with mongodb, specify the -u flag with the URI of the mongdb. For usage with above docker container, provide `-u mongodb://localhost:27017`
 
+## Building
+```
+mkdir bin
+go build -tags netgo -o bin ./...
 ```
 
 ## Usage
-Start mongo docker container
+See above mongodb section.
+```
+cd bin
+./heroes -h
+```
+
+To curl the webapp:
 ```
 curl localhost:8080/api/heroes
 curl localhost:8080/api/heroes/12
@@ -29,3 +41,5 @@ curl -XPUT localhost:8080/api/heroes -H "Content-Type: application/json" --data 
 curl -XDELETE localhost:8080/api/heroes/19
 curl localhost:8080/api/heroes?name=torn
 ```
+
+Alternatively, use the angular frontend. link TODO

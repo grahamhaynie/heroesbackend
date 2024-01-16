@@ -10,11 +10,13 @@ import (
 	"sync"
 )
 
+// an in memory database that conforms to the database interface
 type Memorydb struct {
 	heroes  []hero.Hero
 	rwMutex sync.RWMutex
 }
 
+// "connect" to the database
 func (m *Memorydb) Connect(p database.Params) error {
 	m.rwMutex.Lock()
 	defer m.rwMutex.Unlock()
@@ -23,10 +25,12 @@ func (m *Memorydb) Connect(p database.Params) error {
 	return nil
 }
 
+// "disconnect" from the database
 func (m *Memorydb) Disconnect() error {
 	return nil
 }
 
+// get hero by specified id
 func (m *Memorydb) GetById(id int) (*hero.Hero, error) {
 	m.rwMutex.Lock()
 	defer m.rwMutex.Unlock()
@@ -39,6 +43,7 @@ func (m *Memorydb) GetById(id int) (*hero.Hero, error) {
 	return nil, errors.New("hero with id not found")
 }
 
+// get hero by name
 func (m *Memorydb) GetByName(name string) ([]hero.Hero, error) {
 	m.rwMutex.Lock()
 	defer m.rwMutex.Unlock()
@@ -52,12 +57,14 @@ func (m *Memorydb) GetByName(name string) ([]hero.Hero, error) {
 	return hs, nil
 }
 
+// get all heroes
 func (m *Memorydb) GetAll() ([]hero.Hero, error) {
 	m.rwMutex.Lock()
 	defer m.rwMutex.Unlock()
 	return m.heroes, nil
 }
 
+// update hero with new value, matching by id
 func (m *Memorydb) UpdateHero(h hero.Hero) error {
 	m.rwMutex.Lock()
 	defer m.rwMutex.Unlock()
@@ -70,6 +77,7 @@ func (m *Memorydb) UpdateHero(h hero.Hero) error {
 	return errors.New("Hero with id " + fmt.Sprintf("%v", h.Id) + "not found")
 }
 
+// delete hero with specified id
 func (m *Memorydb) DeleteHero(id int) error {
 	m.rwMutex.Lock()
 	defer m.rwMutex.Unlock()
@@ -88,6 +96,7 @@ func (m *Memorydb) DeleteHero(id int) error {
 	return nil
 }
 
+// add new hero
 func (m *Memorydb) AddHero(h hero.Hero) error {
 	m.rwMutex.Lock()
 	defer m.rwMutex.Unlock()
@@ -102,8 +111,8 @@ func (m *Memorydb) AddHero(h hero.Hero) error {
 	return nil
 }
 
+// sort heroes by id
 func (m *Memorydb) SortHeroes() {
-	// sort heroes
 	sort.Slice(m.heroes, func(i int, j int) bool {
 		return m.heroes[i].Id < m.heroes[j].Id
 	})

@@ -15,6 +15,7 @@ type Herodb interface {
 	AddHero(h hero.Hero) error
 }
 
+// sample heroes to populate database with
 var TestHeroes = []hero.Hero{
 	{Id: 12, Name: "Dr. Nice", Power: "bein nice", AlterEgo: "nobody", PhotoURL: "http://localhost:8080/photo/minion.jpg"},
 	{Id: 13, Name: "Bombasto", Power: "throwing stuf"},
