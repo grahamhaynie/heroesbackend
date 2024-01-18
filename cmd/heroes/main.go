@@ -86,7 +86,7 @@ func main() {
 	r.HandleFunc(basepath+"/", handleBase).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc(basepath+"/{id}", handleId).Methods(http.MethodGet, http.MethodDelete, http.MethodOptions)
 	r.HandleFunc("/photo/"+"{fname}", getPhoto).Methods(http.MethodGet, http.MethodOptions)
-	r.HandleFunc(basepath+"/photo/{id}/"+"{fname}", handlePhoto).Methods(http.MethodPut, http.MethodPost, http.MethodOptions)
+	r.HandleFunc(basepath+"/photo/{id}", handlePhoto).Methods(http.MethodPost, http.MethodOptions)
 	r.Use(mux.CORSMethodMiddleware(r))
 
 	http.ListenAndServe(":8080", r)

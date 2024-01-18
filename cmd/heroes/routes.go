@@ -8,9 +8,11 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -201,43 +203,50 @@ func getPhoto(w http.ResponseWriter, r *http.Request) {
 func handlePhoto(w http.ResponseWriter, r *http.Request) {
 	setHeaders(&w)
 
-	// parse filename
-	vars := mux.Vars(r)
-	n, ok := vars["fname"]
-	if !ok {
-		fmt.Println("filename is missing in parameters")
-		w.WriteHeader(http.StatusBadRequest)
+	// Parse the multipart form
+	if err := r.ParseMultipartForm(10 << 20); err != nil { // Max size set to 10MB
+		http.Error(w, "Error parsing multipart form: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	switch r.Method {
-	case http.MethodPut, http.MethodPost:
+	// Retrieve the file from the form data
+	file, handler, err := r.FormFile("photo")
+	if err != nil {
+		http.Error(w, "Error retrieving the file: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
 
-		// save file
-		body, err := io.ReadAll(r.Body)
+	// Generate a unique filename, for example, using a UUID
+	newFileName := generateUniqueFileName(handler.Filename)
+	fmt.Println(newFileName)
+	filePath := resourceDir + "/" + newFileName
+
+	switch r.Method {
+	case http.MethodPost:
+
+		// Create the file
+		dst, err := os.Create(filePath)
 		if err != nil {
-			fmt.Println("could not read body as file")
-			w.WriteHeader(http.StatusInternalServerError)
+			http.Error(w, "Error creating file: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
-		defer r.Body.Close()
-		err = os.WriteFile(resourceDir+"/"+n, body, 0644)
-		if err != nil {
-			fmt.Println("could not write body to file")
-			w.WriteHeader(http.StatusInternalServerError)
+		defer dst.Close()
+
+		// Copy the uploaded file to the created file
+		if _, err := io.Copy(dst, file); err != nil {
+			http.Error(w, "Error saving file: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// update hero with new file location
-		response := map[string]string{"url": "http://localhost:8080/photo/" + n}
+		// TODO - fix this hardcode
+		response := map[string]string{"url": "http://localhost:8080/photo/" + newFileName}
 		w.Header().Set("Content-Type", "application/json")
-		m, err := json.Marshal(response)
-		if err != nil {
-			fmt.Printf("error marashalling json: %v\n", err)
-			w.WriteHeader(http.StatusInternalServerError)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, "Error encoding response: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
-		fmt.Fprintf(w, "%s", m)
 
 	// options for cors requests so just return
 	case http.MethodOptions:
@@ -245,4 +254,8 @@ func handlePhoto(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+func generateUniqueFileName(originalName string) string {
+	return fmt.Sprintf("%s%s", uuid.New().String(), filepath.Ext(originalName))
 }

@@ -3,9 +3,8 @@ HTTP server for second app
 
 ## TODO 
 - unit tests for mongo
-- fix photo uploading logic. kinda goofy. also fix case of duplicate filename. use channels.
 - finish todos
-- cleanup git 
+- cleanup git - cleanup history, add release, tag
 - openapi
 - check return codes
 - kube

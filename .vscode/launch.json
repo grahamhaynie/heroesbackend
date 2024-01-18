@@ -10,7 +10,8 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/heroes",
-            "args": ["-u", "mongodb://localhost:27017", "-r", "${workspaceFolder}/resources"]
+            // "-u", "mongodb://localhost:27017",
+            "args": ["-r", "${workspaceFolder}\\resources"]
         }
     ]
 }
