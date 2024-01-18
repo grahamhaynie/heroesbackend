@@ -1,18 +1,21 @@
 package database
 
-import "gorestapi/internal/hero"
+import (
+	"context"
+	"gorestapi/internal/hero"
+)
 
 type Params interface{}
 
 type Herodb interface {
-	Connect(p Params) error
-	Disconnect() error
-	GetById(id int) (*hero.Hero, error)
-	GetAll() ([]hero.Hero, error)
-	GetByName(name string) ([]hero.Hero, error)
-	UpdateHero(h hero.Hero) error
-	DeleteHero(id int) error
-	AddHero(h hero.Hero) error
+	Connect(ctx context.Context, p Params) error
+	Disconnect(ctx context.Context) error
+	GetById(ctx context.Context, id int) (*hero.Hero, error)
+	GetAll(ctx context.Context) ([]hero.Hero, error)
+	GetByName(ctx context.Context, name string) ([]hero.Hero, error)
+	UpdateHero(ctx context.Context, h hero.Hero) error
+	DeleteHero(ctx context.Context, id int) error
+	AddHero(ctx context.Context, h hero.Hero) error
 }
 
 // sample heroes to populate database with

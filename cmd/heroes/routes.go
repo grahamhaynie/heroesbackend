@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"gorestapi/internal/hero"
@@ -8,8 +9,13 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
+)
+
+const (
+	TIMEOUT = 10 * time.Second
 )
 
 // set CORS Headers
@@ -23,6 +29,10 @@ func setHeaders(w *http.ResponseWriter) {
 func handleBase(w http.ResponseWriter, r *http.Request) {
 	setHeaders(&w)
 
+	// wrap request context in timeout
+	ctx, cancel := context.WithTimeout(r.Context(), TIMEOUT)
+	defer cancel()
+
 	switch r.Method {
 	// get request with a name query parameter returns a specific hero by name
 	// get request without a name query parameter returns all heroes
@@ -31,14 +41,14 @@ func handleBase(w http.ResponseWriter, r *http.Request) {
 		var qheroes []hero.Hero
 		var err error
 		if len(name) == 0 {
-			qheroes, err = db.GetAll()
+			qheroes, err = db.GetAll(ctx)
 			if err != nil {
 				fmt.Printf("error querying database: %v\n", err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 		} else {
-			qheroes, err = db.GetByName(name)
+			qheroes, err = db.GetByName(ctx, name)
 			if err != nil {
 				fmt.Printf("error querying database: %v\n", err)
 				w.WriteHeader(http.StatusInternalServerError)
@@ -64,7 +74,7 @@ func handleBase(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if err = db.AddHero(hero); err != nil {
+		if err = db.AddHero(ctx, hero); err != nil {
 			fmt.Printf("error adding hero to database: %v\n", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -79,7 +89,7 @@ func handleBase(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		if err = db.UpdateHero(hero); err != nil {
+		if err = db.UpdateHero(ctx, hero); err != nil {
 			fmt.Printf("hero %v does not exist and could not be updated \n", hero)
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -96,6 +106,10 @@ func handleBase(w http.ResponseWriter, r *http.Request) {
 // handler for the /{id} route
 func handleId(w http.ResponseWriter, r *http.Request) {
 	setHeaders(&w)
+
+	// wrap request context in timeout
+	ctx, cancel := context.WithTimeout(r.Context(), TIMEOUT)
+	defer cancel()
 
 	// parse id from url path
 	vars := mux.Vars(r)
@@ -116,7 +130,7 @@ func handleId(w http.ResponseWriter, r *http.Request) {
 
 	// get returns hero with specified id
 	case http.MethodGet:
-		h, err := db.GetById(id)
+		h, err := db.GetById(ctx, id)
 		if err != nil {
 			fmt.Printf("error querying database: %v\n", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -138,7 +152,7 @@ func handleId(w http.ResponseWriter, r *http.Request) {
 
 	// delete hero with specified id
 	case http.MethodDelete:
-		if err := db.DeleteHero(id); err != nil {
+		if err := db.DeleteHero(ctx, id); err != nil {
 			fmt.Println("hero with id " + i + " could not be deleted as it does not exist")
 			w.WriteHeader(http.StatusBadRequest)
 			return

@@ -3,9 +3,7 @@ HTTP server for second app
 
 ## TODO 
 - unit tests for mongo
-- add contexts https://go.dev/blog/context
 - fix photo uploading logic. kinda goofy. also fix case of duplicate filename. use channels.
-- maybe cleanup main into more files.
 - finish todos
 - cleanup git 
 - openapi

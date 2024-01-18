@@ -1,6 +1,7 @@
 package memorydb
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"gorestapi/internal/database"
@@ -17,7 +18,7 @@ type Memorydb struct {
 }
 
 // "connect" to the database
-func (m *Memorydb) Connect(p database.Params) error {
+func (m *Memorydb) Connect(ctx context.Context, p database.Params) error {
 	m.rwMutex.Lock()
 	defer m.rwMutex.Unlock()
 	m.heroes = database.TestHeroes
@@ -26,12 +27,12 @@ func (m *Memorydb) Connect(p database.Params) error {
 }
 
 // "disconnect" from the database
-func (m *Memorydb) Disconnect() error {
+func (m *Memorydb) Disconnect(ctx context.Context) error {
 	return nil
 }
 
 // get hero by specified id
-func (m *Memorydb) GetById(id int) (*hero.Hero, error) {
+func (m *Memorydb) GetById(ctx context.Context, id int) (*hero.Hero, error) {
 	m.rwMutex.Lock()
 	defer m.rwMutex.Unlock()
 
@@ -44,7 +45,7 @@ func (m *Memorydb) GetById(id int) (*hero.Hero, error) {
 }
 
 // get hero by name
-func (m *Memorydb) GetByName(name string) ([]hero.Hero, error) {
+func (m *Memorydb) GetByName(ctx context.Context, name string) ([]hero.Hero, error) {
 	m.rwMutex.Lock()
 	defer m.rwMutex.Unlock()
 
@@ -58,14 +59,14 @@ func (m *Memorydb) GetByName(name string) ([]hero.Hero, error) {
 }
 
 // get all heroes
-func (m *Memorydb) GetAll() ([]hero.Hero, error) {
+func (m *Memorydb) GetAll(ctx context.Context) ([]hero.Hero, error) {
 	m.rwMutex.Lock()
 	defer m.rwMutex.Unlock()
 	return m.heroes, nil
 }
 
 // update hero with new value, matching by id
-func (m *Memorydb) UpdateHero(h hero.Hero) error {
+func (m *Memorydb) UpdateHero(ctx context.Context, h hero.Hero) error {
 	m.rwMutex.Lock()
 	defer m.rwMutex.Unlock()
 	for i, he := range m.heroes {
@@ -78,7 +79,7 @@ func (m *Memorydb) UpdateHero(h hero.Hero) error {
 }
 
 // delete hero with specified id
-func (m *Memorydb) DeleteHero(id int) error {
+func (m *Memorydb) DeleteHero(ctx context.Context, id int) error {
 	m.rwMutex.Lock()
 	defer m.rwMutex.Unlock()
 	del := -1
@@ -97,7 +98,7 @@ func (m *Memorydb) DeleteHero(id int) error {
 }
 
 // add new hero
-func (m *Memorydb) AddHero(h hero.Hero) error {
+func (m *Memorydb) AddHero(ctx context.Context, h hero.Hero) error {
 	m.rwMutex.Lock()
 	defer m.rwMutex.Unlock()
 

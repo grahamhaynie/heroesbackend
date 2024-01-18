@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"gorestapi/internal/database"
@@ -10,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -55,20 +57,24 @@ func main() {
 	if uri.IsSet {
 		fmt.Println("Using mongodb")
 		db = &mongodb.Mongodb{}
-		params = mongodb.MongodbParmas{URI: uri.Value}
+		params = mongodb.MongodbParams{URI: uri.Value}
 	} else {
 		fmt.Println("Using memorydb")
 		db = &memorydb.Memorydb{}
 	}
 
-	if err := db.Connect(params); err != nil {
+	// use timeout context or mongo will hang forever
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := db.Connect(ctx, params); err != nil {
 		fmt.Println("Error connecting to db: " + err.Error())
 		os.Exit(1)
 	}
 	fmt.Println("Database connected")
 
 	defer func() {
-		if err := db.Disconnect(); err != nil {
+		if err := db.Disconnect(ctx); err != nil {
 			fmt.Println("Error disconnecting from db: " + err.Error())
 			os.Exit(1)
 		}

@@ -1,6 +1,7 @@
 package memorydb_test
 
 import (
+	"context"
 	"gorestapi/internal/database"
 	"gorestapi/internal/database/memorydb"
 	"gorestapi/internal/hero"
@@ -20,11 +21,11 @@ func TestMemoryDbImplementsHerodb(t *testing.T) {
 func TestGetById(t *testing.T) {
 	// Initialize with test data
 	db := memorydb.Memorydb{}
-	db.Connect(nil)
+	db.Connect(nil, context.TODO())
 
 	// Test for an existing hero
 	existingID := 12
-	hero, err := db.GetById(existingID)
+	hero, err := db.GetById(context.TODO(), existingID)
 	if err != nil {
 		t.Errorf("GetById() with existing ID returned error: %v", err)
 	}
@@ -34,7 +35,7 @@ func TestGetById(t *testing.T) {
 
 	// Test for a non-existing hero
 	nonExistingID := 999
-	_, err = db.GetById(nonExistingID)
+	_, err = db.GetById(context.TODO(), nonExistingID)
 	if err == nil {
 		t.Error("GetById() with non-existing ID did not return an error")
 	}
@@ -45,9 +46,9 @@ func TestGetById(t *testing.T) {
 func TestGetAll(t *testing.T) {
 	// initialize with test data
 	db := memorydb.Memorydb{}
-	db.Connect(nil)
+	db.Connect(context.TODO(), nil)
 
-	got, err := db.GetAll()
+	got, err := db.GetAll(context.TODO())
 	if err != nil {
 		t.Errorf("GetAll() error = %v, wantErr nil", err)
 	}
@@ -67,7 +68,7 @@ func TestGetAll(t *testing.T) {
 func TestGetByName(t *testing.T) {
 	// Initialize with test data
 	db := memorydb.Memorydb{}
-	db.Connect(nil)
+	db.Connect(context.TODO(), nil)
 
 	tests := []struct {
 		name     string
@@ -79,7 +80,7 @@ func TestGetByName(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got, err := db.GetByName(tt.name)
+		got, err := db.GetByName(context.TODO(), tt.name)
 		if (err != nil) != tt.wantErr {
 			t.Errorf("GetByName(%s) error = %v, wantErr %v", tt.name, err, tt.wantErr)
 			continue
@@ -94,7 +95,7 @@ func TestGetByName(t *testing.T) {
 func TestUpdateHero(t *testing.T) {
 	// Initialize with test data
 	db := memorydb.Memorydb{}
-	db.Connect(nil)
+	db.Connect(context.TODO(), nil)
 
 	// wantErr indicates that an error should occur in updating hero
 	tests := []struct {
@@ -106,14 +107,14 @@ func TestUpdateHero(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		err := db.UpdateHero(tt.hero)
+		err := db.UpdateHero(context.TODO(), tt.hero)
 		if (err != nil) != tt.wantErr {
 			t.Errorf("UpdateHero() error = %v, wantErr %v", err, tt.wantErr)
 		}
 
 		// Verify update
 		if !tt.wantErr {
-			updatedHero, _ := db.GetById(tt.hero.Id)
+			updatedHero, _ := db.GetById(context.TODO(), tt.hero.Id)
 			if !reflect.DeepEqual(updatedHero, &tt.hero) {
 				t.Errorf("UpdateHero() failed to update hero, got %v, want %v", updatedHero, &tt.hero)
 			}
@@ -125,7 +126,7 @@ func TestUpdateHero(t *testing.T) {
 func TestDeleteHero(t *testing.T) {
 	// Initialize with test data
 	db := memorydb.Memorydb{}
-	db.Connect(nil)
+	db.Connect(context.TODO(), nil)
 
 	// wantErr indicates that an error should occur in deleting a hero
 	tests := []struct {
@@ -137,14 +138,14 @@ func TestDeleteHero(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		err := db.DeleteHero(tt.id)
+		err := db.DeleteHero(context.TODO(), tt.id)
 		if (err != nil) != tt.wantErr {
 			t.Errorf("DeleteHero() error = %v, wantErr %v", err, tt.wantErr)
 		}
 
 		if !tt.wantErr {
 			// Verify deletion
-			_, err := db.GetById(tt.id)
+			_, err := db.GetById(context.TODO(), tt.id)
 			if err == nil {
 				t.Errorf("DeleteHero() failed to delete hero with ID %d", tt.id)
 			}
@@ -156,24 +157,24 @@ func TestDeleteHero(t *testing.T) {
 func TestAddHero(t *testing.T) {
 	// Initialize with test data
 	db := memorydb.Memorydb{}
-	db.Connect(nil)
+	db.Connect(context.TODO(), nil)
 
 	// Test adding a new hero
 	newHero := hero.Hero{Id: 21, Name: "New Hero", Power: "New Power"}
-	err := db.AddHero(newHero)
+	err := db.AddHero(context.TODO(), newHero)
 	if err != nil {
 		t.Errorf("AddHero() new hero error = %v, wantErr nil", err)
 	}
 
 	// Verify the new hero was added
-	addedHero, err := db.GetById(21)
+	addedHero, err := db.GetById(context.TODO(), 21)
 	if err != nil || !reflect.DeepEqual(addedHero, &newHero) {
 		t.Errorf("AddHero() failed to add new hero, got %v, want %v", addedHero, newHero)
 	}
 
 	// Test adding a hero with an existing ID
 	duplicateHero := hero.Hero{Id: 12, Name: "Duplicate Hero", Power: "Duplicate Power"}
-	err = db.AddHero(duplicateHero)
+	err = db.AddHero(context.TODO(), duplicateHero)
 	if err != nil {
 		t.Errorf("AddHero() should return error on duplicate ID, got nil")
 	}

@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/heroes/main.go",
+            "program": "${workspaceFolder}/cmd/heroes",
             "args": ["-u", "mongodb://localhost:27017", "-r", "${workspaceFolder}/resources"]
         }
     ]
