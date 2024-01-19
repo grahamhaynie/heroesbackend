@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -224,6 +225,20 @@ func handlePhoto(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodPost:
+
+		// Check if the uploaded file is an image
+		buffer := make([]byte, 512)
+		_, err := file.Read(buffer)
+		if err != nil {
+			http.Error(w, "File read error", http.StatusInternalServerError)
+			return
+		}
+		contentType := http.DetectContentType(buffer)
+		if !strings.HasPrefix(contentType, "image/") {
+			http.Error(w, "The file is not an image", http.StatusBadRequest)
+			return
+		}
+		file.Seek(0, io.SeekStart) // Reset the file pointer to the beginning
 
 		// Create the file
 		dst, err := os.Create(filePath)

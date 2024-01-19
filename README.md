@@ -3,7 +3,6 @@ HTTP server for second app
 
 ## TODO 
 - unit tests for mongo
-- finish todos
 - cleanup git - cleanup history, add release, tag
 - openapi
 - check return codes
