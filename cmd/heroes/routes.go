@@ -240,8 +240,8 @@ func handlePhoto(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// update hero with new file location
-		// TODO - fix this hardcode
-		response := map[string]string{"url": "http://localhost:8080/photo/" + newFileName}
+		// future update would be to change localhost to be a dynamic value
+		response := map[string]string{"url": "http://" + r.Host + "/photo/" + newFileName}
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			http.Error(w, "Error encoding response: "+err.Error(), http.StatusInternalServerError)
